@@ -5,6 +5,13 @@ ini_set('display_errors', '1');
 ini_set('display_startup_errors', '1');
 error_reporting(E_ALL);
 
+function whatIsHappening() {
+    echo '<h2>$_GET</h2>';
+    var_dump($_GET);
+    echo '<h2>$_POST</h2>';
+    var_dump($_POST);
+}
+
 $sports = ['Football', 'Tennis', 'Ping pong', 'Volley ball', 'Rugby', 'Horse riding', 'Swimming', 'Judo', 'Karate'];
 
 function openConnection(): PDO
@@ -50,12 +57,11 @@ if(!empty($_POST['firstname']) && !empty($_POST['lastname'])) {
         $userId = $_POST['id'];
     } else {
         //why did I leave this if empty? There must be no important reason for this. Move on.
+        $userId = $pdo->lastInsertId();
     }
 
     //@todo Why does this loop not work? If only I could see the bigger picture.
     foreach($_POST['sports'] AS $sport) {
-        $userId = $pdo->lastInsertId();
-
         $handle = $pdo->prepare('INSERT INTO sport (user_id, sport) VALUES (:userId, :sport)');
         $handle->bindValue(':userId', $userId);
         $handle->bindValue(':sport', $sport);
@@ -93,7 +99,7 @@ if(!empty($_GET['id'])) {
     $handle->bindValue(':id', $_GET['id']);
     $handle->execute();
     foreach($handle->fetchAll() AS $sport) {
-        $selectedUser['sports'][] = $sport;//@todo I just want an array of all sports of this, why is it not working?
+        $selectedUser['sports'][] = $sport['sport'];//@todo I just want an array of all sports of this, why is it not working? fixed: search for sport in $sport
     }
 }
 
@@ -105,6 +111,6 @@ if(empty($selectedUser['id'])) {
         'sports' => []
     ];
 }
-var_dump($_POST);
+whatIsHappening();
 require 'view.php';
 // All bugs where written with Love for the learning Process. No actual bugs where harmed or eaten during the creation of this code.
